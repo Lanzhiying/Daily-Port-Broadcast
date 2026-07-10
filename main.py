@@ -1,15 +1,23 @@
 import feedparser
 
-RSS_URL = "https://feeds.bbci.co.uk/news/world/rss.xml"
+# 读取 feeds.txt
+with open("feeds.txt", "r", encoding="utf-8") as f:
+    feeds = [line.strip() for line in f if line.strip()]
 
-print("正在获取 RSS...")
-print("RSS:", RSS_URL)
+print(f"共读取到 {len(feeds)} 个 RSS\n")
 
-feed = feedparser.parse(RSS_URL)
+# 遍历所有 RSS
+for rss in feeds:
 
-print("状态：", feed.get("status"))
-print("标题：", feed.feed.get("title"))
-print("新闻数量：", len(feed.entries))
+    print("=" * 60)
+    print(rss)
 
-for item in feed.entries[:5]:
-    print(item.title)
+    feed = feedparser.parse(rss)
+
+    print(f"共 {len(feed.entries)} 条新闻")
+
+    # 只显示前3条
+    for news in feed.entries[:3]:
+        print("-", news.title)
+
+    print()
