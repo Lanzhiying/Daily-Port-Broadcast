@@ -25,6 +25,11 @@ https://news.google.com/rss/search?q=Kaohsiung+port+ship&hl=en-US&gl=US&ceid=US:
 https://news.google.com/rss/search?q=Tokyo+port+Yokohama+ship&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=Kobe+Osaka+port+ship&hl=en-US&gl=US&ceid=US:en
 
+
+# --- Korea ports ---
+https://news.google.com/rss/search?q=Busan+port+shipping+Korea&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=Incheon+port+ship&hl=en-US&gl=US&ceid=US:en
+
 # --- Maritime industry news ---
 https://splash247.com/feed/
 https://gcaptain.com/feed/

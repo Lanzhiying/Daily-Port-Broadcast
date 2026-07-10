@@ -233,6 +233,42 @@
       "lat": 34.64,
       "lon": 135.43,
       "code": "JPOSA"
+    },
+    {
+      "country": "韩国",
+      "country_en": "South Korea",
+      "port": "釜山",
+      "port_en": "Busan",
+      "lat": 35.1,
+      "lon": 129.04,
+      "code": "KRPUS"
+    },
+    {
+      "country": "韩国",
+      "country_en": "South Korea",
+      "port": "仁川",
+      "port_en": "Incheon",
+      "lat": 37.46,
+      "lon": 126.62,
+      "code": "KRINC"
+    },
+    {
+      "country": "韩国",
+      "country_en": "South Korea",
+      "port": "光阳",
+      "port_en": "Gwangyang",
+      "lat": 34.91,
+      "lon": 127.68,
+      "code": "KRYOS"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "茂名",
+      "port_en": "Maoming",
+      "lat": 21.46,
+      "lon": 111.07,
+      "code": "CNMMI"
     }
   ]
 }
