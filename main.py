@@ -66,8 +66,10 @@ def main():
     print("Step 6: Gemini classification...")
     try:
         organized = organize_news(unique, ports, weather_data)
-        reports = organized.get("reports", []) if isinstance(organized, dict) else []
-        print(f"  Reports: {len(reports)}")
+        reports = organized.get("closures", []) if isinstance(organized, dict) else []
+        closures = len(organized.get("closures", [])) if isinstance(organized, dict) else 0
+        suspensions = len(organized.get("suspensions", [])) if isinstance(organized, dict) else 0
+        print(f"  Closures: {closures}, Suspensions: {suspensions}")
     except Exception as e:
         print(f"  Gemini failed: {e}")
         traceback.print_exc()
@@ -103,7 +105,14 @@ def main():
     print("Done.")
     print(f"  News: {len(news)} -> filtered: {len(filtered)} -> deduped: {len(unique)}")
     print(f"  Weather: {len(weather_data)} ports")
-    print(f"  Report: {len(reports)} ports")
+    total_reported = (
+        len(organized.get("closures", [])) +
+        len(organized.get("suspensions", [])) +
+        len(organized.get("disrupted_ports", [])) +
+        len(organized.get("normal_ports", [])) +
+        len(organized.get("no_data_ports", []))
+    ) if isinstance(organized, dict) else 0
+    print(f"  Ports reported: {total_reported} (closures: {closures}, suspensions: {suspensions})")
     print("=" * 60)
 
 

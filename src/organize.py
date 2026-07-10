@@ -1,6 +1,6 @@
 """
-Use Gemini 1.5 Flash to analyze port status.
-Reports on every port with terminal-level detail for key ports.
+Port status analysis with PRIMARY focus on closures and suspensions.
+Multiple source cross-verification required.
 """
 import json, os, time
 import google.generativeai as genai
@@ -11,71 +11,120 @@ def load_ports(config_path="config/ports.json"):
         return json.load(f)["ports"]
 
 
-PROMPT = """You are a senior port operations analyst. Report on EVERY port listed below.
+PROMPT = """You are a port emergency operations analyst. Your PRIMARY mission is to detect and verify port CLOSURES and shipping SUSPENSIONS.
 
 ## Monitored Ports (report ALL)
 {port_list}
 
-## Available News
+## Available News Sources (cross-verify across them)
 {news_text}
 
-## Current Weather
+## Weather Data
 {weather_text}
 
-## Key Ports — Terminal-Level Detail Required
-For these ports, provide specific terminal/berth status if available from news:
-- Maoming: single buoy mooring, oil terminal
-- Shanghai: Yangshan deep-water, Waigaoqiao terminals
-- Tianjin: container terminals, bulk cargo berths
-- Kaohsiung: container terminals
-- Busan: Busan New Port, North Port
-- Laem Chabang: deep-sea berths
+## CRITICAL RULES
 
-## Task
-For EVERY port, return JSON with these fields per port:
+### 1. Closure/Suspension Detection (HIGHEST PRIORITY)
+Scan ALL news for these signals:
+- Port closure, terminal shutdown, berth suspension
+- Force majeure declaration
+- Vessel traffic suspension, pilot service halted  
+- Storm/typhoon port closure, emergency shutdown
+- Strike, labor action causing stoppage
+- Accident, collision, oil spill causing closure
+- Government order, customs halt, border closure
 
+### 2. Cross-Verification (MANDATORY)
+- If closure detected: check if confirmed by at least 2 different sources or source types (industry RSS + Google News)
+- Flag single-source reports as "unverified"
+- If sources conflict: report the conflict explicitly
+- Weather-only closure prediction: mark as "forecast" not "confirmed"
+
+### 3. Closure Detail (for each closure/suspension found)
+REQUIRED fields when closure detected:
+- closure_type: weather | labor | accident | regulatory | other
+- closure_scope: full_port | specific_terminal | specific_berth
+- start_time: when did/will it start
+- estimated_duration: how long expected
+- affected_operations: what is stopped (loading/unloading/bunkering/pilotage/...)
+- source_count: how many independent sources confirm this
+- verification_status: confirmed | unverified | conflicting
+
+### 4. Report Order
+Put closures/suspensions FIRST, then disruptions, then normal ports.
+
+## Output JSON Format
 {{
-  "reports": [
+  "closures": [
     {{
       "country": "国家",
       "port": "港口名",
       "port_code": "CODE",
-      "status": "normal/congested/closed/disrupted/no_data",
-      "headline": "一句话运营状态",
-      "terminal_detail": "重点港口的码头/泊位具体情况（非重点港口写 '-'）",
-      "congestion_detail": "拥堵详情或 '无明显拥堵'",
-      "closure_risk": "none/low/medium/high",
-      "weather_impact": "天气对运营的影响分析",
-      "closure_forecast": "未来24-48h是否可能因天气关闭，预估时间段（无则写 'no forecast needed'）",
-      "key_events": ["事件"],
+      "closure_type": "weather/labor/accident/regulatory/other",
+      "closure_scope": "full_port/specific_terminal/specific_berth",
+      "affected_facility": "受影响的码头/泊位名称",
+      "start_time": "开始时间或预估开始时间",
+      "estimated_duration": "预计持续时间",
+      "affected_operations": "受影响的操作类型",
+      "reason_detail": "详细原因说明（2-3句话）",
+      "source_count": 2,
+      "verification_status": "confirmed/unverified/conflicting",
+      "verification_note": "交叉验证说明",
+      "weather_link": "是否与天气相关及具体关联",
       "confidence": "high/medium/low"
     }}
   ],
-  "summary": "全局摘要",
-  "alerts": ["需关注的预警"]
+  "suspensions": [
+    {{
+      "country": "国家",  
+      "port": "港口名",
+      "port_code": "CODE",
+      "suspension_type": "vessel_traffic/pilotage/bunkering/cargo_ops/other",
+      "detail": "详细说明",
+      "start_time": "开始时间",
+      "estimated_duration": "预计持续时间",
+      "verification_status": "confirmed/unverified",
+      "confidence": "high/medium/low"
+    }}
+  ],
+  "disrupted_ports": [
+    {{
+      "country": "国家",
+      "port": "港口名",
+      "port_code": "CODE",
+      "issue": "具体问题",
+      "severity": "moderate/significant",
+      "closure_risk": "low/medium/high"
+    }}
+  ],
+  "normal_ports": [
+    {{
+      "country": "国家",
+      "port": "港口名", 
+      "port_code": "CODE",
+      "status_note": "正常运营简述",
+      "weather_note": "天气说明"
+    }}
+  ],
+  "no_data_ports": [
+    {{
+      "country": "国家",
+      "port": "港口名",
+      "port_code": "CODE"
+    }}
+  ],
+  "summary": "全局摘要（closures/suspensions数量优先）",
+  "alerts": ["紧急预警"]
 }}
 
-## Status definitions
-- normal: no disruption, weather fine
-- congested: delays, queues reported
-- closed: port shutdown, storm closure
-- disrupted: partial closure, labor issues
-- no_data: no info available
+## Final Verification Checklist (MUST complete before output)
+1. Every closure: cross-checked against at least 1 other news item? (note source_count)
+2. Weather-only predictions: marked as "forecast", not "confirmed"?
+3. Conflicting reports: flagged and explained?
+4. All {total_ports} ports accounted for across closures/suspensions/disrupted/normal/no_data?
+5. No port appears in more than one category?
 
-## Weather → Operations Rules
-- Waves > 2.5m: crane ops restricted, possible berth suspension
-- Waves > 3.5m: likely port closure
-- Wind > 30 km/h: crane ops restricted
-- Wind > 50 km/h: likely port closure
-- Swell > 3m: pilot boarding suspended
-- If 3-day trend shows worsening, forecast closure window
-
-## Rules
-1. Report ALL {total_ports} ports
-2. Key ports (Maoming/Shanghai/Tianjin/Kaohsiung/Keelung/Taichung/Busan/Incheon/Gwangyang/Laem Chabang/Bangkok): include terminal_detail
-3. Always assess weather_impact and closure_forecast
-4. Be conservative: "normal" unless evidence of disruption
-5. Return valid JSON only
+Return valid JSON only.
 """
 
 
@@ -87,17 +136,15 @@ def organize_news(news_list, ports, weather_data=None):
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel("gemini-1.5-flash")
 
-    # Port table
+    # Port list
     lines = ["| Country | Port | Code |", "|---|---|---|"]
     for p in ports:
         lines.append(f"| {p['country']} | {p['port']} | {p['code']} |")
-    port_list = "\n".join(lines)
 
-    # News (limit 25)
+    # News (send ALL, not just 25 — closure detection needs breadth)
     items = []
-    for i, n in enumerate(news_list[:25]):
-        items.append(f"[{i+1}] {n['title']} | {n.get('summary','')[:150]}")
-    news_text = "\n".join(items) if items else "(no news)"
+    for i, n in enumerate(news_list[:30]):
+        items.append(f"[{i+1}] {n['title']} | {n.get('summary','')[:200]}")
 
     # Weather
     w_lines = []
@@ -105,12 +152,11 @@ def organize_news(news_list, ports, weather_data=None):
         s = wd.get("summary", {})
         if s and not wd.get("error"):
             w_lines.append(f"- {wd['country']}/{wd['port']}({code}): {s.get('wave','?')} {s.get('wind','?')} {s.get('trend','?')}")
-    weather_text = "\n".join(w_lines) if w_lines else "(unavailable)"
 
     prompt = PROMPT.format(
-        port_list=port_list,
-        news_text=news_text,
-        weather_text=weather_text,
+        port_list="\n".join(lines),
+        news_text="\n".join(items) if items else "(no news)",
+        weather_text="\n".join(w_lines) if w_lines else "(unavailable)",
         total_ports=len(ports),
     )
 
@@ -118,7 +164,7 @@ def organize_news(news_list, ports, weather_data=None):
         try:
             resp = model.generate_content(
                 prompt,
-                generation_config={"temperature": 0.2, "max_output_tokens": 8192},
+                generation_config={"temperature": 0.1, "max_output_tokens": 8192},
             )
             text = resp.text.strip()
             if text.startswith("```"):
@@ -134,6 +180,6 @@ def organize_news(news_list, ports, weather_data=None):
                 print(f"  429, waiting 60s...")
                 time.sleep(60)
                 continue
-            return {"reports": [], "alerts": [], "error": str(e)}
+            return {"closures":[],"suspensions":[],"disrupted_ports":[],"normal_ports":[],"no_data_ports":[],"alerts":[],"error": str(e)}
 
-    return {"reports": [], "alerts": [], "error": "JSON failed"}
+    return {"closures":[],"suspensions":[],"disrupted_ports":[],"normal_ports":[],"no_data_ports":[],"alerts":[],"error":"JSON failed"}
