@@ -1,36 +1,27 @@
-# --- Chinese keyword searches (中国港口中文搜索) ---
-https://news.google.com/rss/search?q=港口+拥堵+封港&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
-https://news.google.com/rss/search?q=航运+停运+暂停&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
-https://news.google.com/rss/search?q=集装箱+码头+延误&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+# === 中文海事行业源 (Chinese maritime industry) ===
+https://news.google.com/rss/search?q=港口+封港+停航+拥堵&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=码头+关闭+暂停+事故&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=航运+延误+排队+锚地&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
 
-# --- English general shipping ---
-https://news.google.com/rss/search?q=port+congestion+closure&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=shipping+disruption+delay&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=container+port+berth&hl=en-US&gl=US&ceid=US:en
+# === 中国港口逐个搜索 (Per-port Chinese) ===
+https://news.google.com/rss/search?q=上海港+洋山+外高桥&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=宁波舟山港+梅山+穿山&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=深圳港+盐田+蛇口&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=青岛港+天津港+厦门港&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=广州港+茂名港+大连港&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
 
-# --- Key ports: China ---
-https://news.google.com/rss/search?q=Shanghai+port+ship+berth&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Ningbo+port+congestion&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Shenzhen+port+Yantian&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Qingdao+port+ship&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Tianjin+port+shipping&hl=en-US&gl=US&ceid=US:en
+# === 东南亚港口中文搜索 ===
+https://news.google.com/rss/search?q=新加坡港+巴生港+拥堵&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=越南+胡志明+盖梅港+泰国+林查班&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=印尼+雅加达+菲律宾+马尼拉港&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
 
-# --- Key ports: Southeast Asia ---
-https://news.google.com/rss/search?q=Singapore+port+congestion&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Port+Klang+Malaysia+ship&hl=en-US&gl=US&ceid=US:en
+# === 台湾+韩国+日本港口搜索 ===
+https://news.google.com/rss/search?q=高雄港+基隆港+釜山港+仁川港&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=东京港+横滨港+神户港+大阪港&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
 
-
-# --- Taiwan & Japan ports ---
-https://news.google.com/rss/search?q=Kaohsiung+port+ship&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Tokyo+port+Yokohama+ship&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Kobe+Osaka+port+ship&hl=en-US&gl=US&ceid=US:en
-
-
-# --- Korea ports ---
-https://news.google.com/rss/search?q=Busan+port+shipping+Korea&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Incheon+port+ship&hl=en-US&gl=US&ceid=US:en
-
-# --- Maritime industry news ---
+# === 英文行业源 (English industry) ===
+https://news.google.com/rss/search?q=port+closure+suspension+congestion&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=shipping+disruption+force+majeure&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=Singapore+port+Shanghai+container&hl=en-US&gl=US&ceid=US:en
 https://splash247.com/feed/
 https://gcaptain.com/feed/
-https://www.marineinsight.com/feed/
