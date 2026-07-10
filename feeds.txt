@@ -1,20 +1,25 @@
-# Google News RSS — general port/shipping search
-https://news.google.com/rss/search?q=port+congestion&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=shipping+news&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=container+shipping&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=maritime+safety&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=port+closure&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Panama+Canal+shipping&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Suez+Canal+shipping&hl=en-US&gl=US&ceid=US:en
+# --- Chinese keyword searches (中国港口中文搜索) ---
+https://news.google.com/rss/search?q=港口+拥堵+封港&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=航运+停运+暂停&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
+https://news.google.com/rss/search?q=集装箱+码头+延误&hl=zh-CN&gl=CN&ceid=CN:zh-Hans
 
-# Google News RSS — key port specific
-https://news.google.com/rss/search?q=Singapore+Port+shipping&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Shanghai+Port+shipping&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Ningbo+Port+shipping&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Shenzhen+Port+shipping&hl=en-US&gl=US&ceid=US:en
-https://news.google.com/rss/search?q=Port+Klang+shipping&hl=en-US&gl=US&ceid=US:en
+# --- English general shipping ---
+https://news.google.com/rss/search?q=port+congestion+closure&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=shipping+disruption+delay&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=container+port+berth&hl=en-US&gl=US&ceid=US:en
 
-# Maritime industry RSS (verified working)
+# --- Key ports: China ---
+https://news.google.com/rss/search?q=Shanghai+port+ship+berth&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=Ningbo+port+congestion&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=Shenzhen+port+Yantian&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=Qingdao+port+ship&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=Tianjin+port+shipping&hl=en-US&gl=US&ceid=US:en
+
+# --- Key ports: Southeast Asia ---
+https://news.google.com/rss/search?q=Singapore+port+congestion&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=Port+Klang+Malaysia+ship&hl=en-US&gl=US&ceid=US:en
+
+# --- Maritime industry news ---
 https://splash247.com/feed/
 https://gcaptain.com/feed/
 https://www.marineinsight.com/feed/

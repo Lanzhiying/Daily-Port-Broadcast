@@ -66,20 +66,19 @@ def main():
     print("Step 6: Gemini classification...")
     try:
         organized = organize_news(unique, ports, weather_data)
-        reports = organized.get("reports", [])
-        no_match = organized.get("no_match_news", [])
-        print(f"  Reports: {len(reports)}, unmatched: {len(no_match)}")
+        reports = organized.get("reports", []) if isinstance(organized, dict) else []
+        print(f"  Reports: {len(reports)}")
     except Exception as e:
         print(f"  Gemini failed: {e}")
         traceback.print_exc()
+        organized = {"reports": [], "summary": "", "alerts": []}
         reports = []
-        no_match = []
 
     # Step 7: Format markdown report
     print()
     print("Step 7: Generating report...")
     try:
-        report_md = format_report(reports, no_match, weather_data, ports)
+        report_md = format_report(organized, None, weather_data, ports)
         date_str = datetime.now().strftime("%Y-%m-%d")
         os.makedirs("reports", exist_ok=True)
         with open(f"reports/{date_str}.md", "w", encoding="utf-8") as f:
@@ -104,7 +103,7 @@ def main():
     print("Done.")
     print(f"  News: {len(news)} -> filtered: {len(filtered)} -> deduped: {len(unique)}")
     print(f"  Weather: {len(weather_data)} ports")
-    print(f"  Report: {len(reports)} items, {len(no_match)} unmatched")
+    print(f"  Report: {len(reports)} ports")
     print("=" * 60)
 
 

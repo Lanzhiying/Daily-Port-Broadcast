@@ -1,111 +1,106 @@
 """
-Format the organized data into a Markdown daily port broadcast.
+Format organized data into Markdown daily port broadcast.
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 def format_report(reports, no_match_news, weather_data, ports):
-    """Generate a Markdown report from organized data."""
-
     today = datetime.now().strftime("%Y-%m-%d")
-    tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
 
     lines = []
-    lines.append(f"# 🌊 港口每日广播 — {today}")
-    lines.append("")
-    lines.append(f"> 📅 日期：{today} ｜ ⏰ 推送时间：北京时间 08:00")
-    lines.append(f"> 📡 覆盖港口：{len(ports)} 个（中国10 + 东南亚8）")
+    lines.append(f"# Port Broadcast {today}")
     lines.append("")
 
-    # ---- Section 1: Port Reports ----
+    # Summary
+    summary = ""
+    alerts = []
+    if isinstance(reports, dict):
+        summary = reports.get("summary", "")
+        alerts = reports.get("alerts", [])
+        reports = reports.get("reports", [])
+
+    if summary:
+        lines.append(f"> {summary}")
+        lines.append("")
+
+    # Alerts
+    if alerts:
+        lines.append("## Alerts")
+        for a in alerts:
+            lines.append(f"- {a}")
+        lines.append("")
+
+    # Port status table
     lines.append("---")
     lines.append("")
-    lines.append("## 📋 港口航运情报")
+    lines.append("## Port Status")
     lines.append("")
+
+    status_emoji = {
+        "normal": "Normal",
+        "congested": "Congested",
+        "closed": "CLOSED",
+        "disrupted": "Disrupted",
+        "no_data": "No Data",
+    }
 
     # Group by country
     by_country = {}
     for r in reports:
-        country = r.get("country", "未知")
-        if country not in by_country:
-            by_country[country] = []
-        by_country[country].append(r)
+        c = r.get("country", "Other")
+        by_country.setdefault(c, []).append(r)
 
-    for country, items in by_country.items():
+    for country in sorted(by_country):
+        items = by_country[country]
         lines.append(f"### {country}")
         lines.append("")
-        lines.append("| 港口 | 摘要 | 拥堵 | 封港 | 封港风险 | 可信度 |")
-        lines.append("|------|------|------|------|----------|--------|")
-        for item in items:
-            port = item.get("port", "?")
-            summary = item.get("summary", "—")
-            congestion = item.get("congestion_level", "—")
-            is_closure = "🚫 是" if item.get("is_port_closure") else "✅ 否"
-            closure_risk = item.get("closure_risk", "—")
-            confidence = item.get("confidence", "—")
-
-            # Emoji for congestion
-            cong_emoji = {"正常":"🟢","轻微拥堵":"🟡","中度拥堵":"🟠","严重拥堵":"🔴"}
-            cong_display = f"{cong_emoji.get(congestion,'')} {congestion}"
-
-            lines.append(
-                f"| **{port}** | {summary} | {cong_display} | {is_closure} | {closure_risk} | {confidence} |"
-            )
+        lines.append("| Port | Status | Details | Closure Risk | Confidence |")
+        lines.append("|------|--------|---------|-------------|------------|")
+        for r in items:
+            port = r.get("port", "?")
+            status = r.get("status", "no_data")
+            st_label = status_emoji.get(status, status)
+            detail = r.get("headline", r.get("congestion_detail", ""))
+            risk = r.get("closure_risk", "?")
+            conf = r.get("confidence", "?")
+            lines.append(f"| **{port}** | {st_label} | {detail} | {risk} | {conf} |")
         lines.append("")
 
-    # ---- Section 2: Weather Summary ----
-    lines.append("---")
-    lines.append("")
-    lines.append("## 🌤️ 天气海况概览")
-    lines.append("")
-
+    # Weather
     if weather_data:
-        lines.append("| 国家 | 港口 | 浪高 | 风速 | 趋势 |")
-        lines.append("|------|------|------|------|------|")
+        lines.append("---")
+        lines.append("")
+        lines.append("## Weather")
+        lines.append("")
+        lines.append("| Country | Port | Wave | Wind | Trend |")
+        lines.append("|---------|------|------|------|-------|")
         for code, wd in weather_data.items():
             s = wd.get("summary", {})
             if wd.get("error"):
-                lines.append(f"| {wd.get('country','?')} | {wd.get('port','?')} | ❌ 获取失败 | — | — |")
+                lines.append(f"| {wd.get('country','?')} | {wd.get('port','?')} | failed | - | - |")
             else:
-                lines.append(
-                    f"| {wd.get('country','?')} | {wd.get('port','?')} | "
-                    f"{s.get('wave','—')} | {s.get('wind','—')} | {s.get('trend','—')} |"
-                )
-        lines.append("")
-    else:
-        lines.append("> ⚠️ 天气数据暂不可用")
+                lines.append(f"| {wd.get('country','?')} | {wd.get('port','?')} | {s.get('wave','-')} | {s.get('wind','-')} | {s.get('trend','-')} |")
         lines.append("")
 
-    # ---- Section 3: Unmatched News ----
-    if no_match_news:
-        lines.append("---")
-        lines.append("")
-        lines.append("## 📰 其他相关新闻（未匹配到监控港口）")
-        lines.append("")
-        for item in no_match_news:
-            title = item.get("title", "?")
-            reason = item.get("reason", "")
-            lines.append(f"- **{title}** — {reason}")
-        lines.append("")
-
-    # ---- Footer ----
+    # Key events
     lines.append("---")
     lines.append("")
-    lines.append(f"*由 Daily Port Broadcast 自动生成 · {today}*")
-    lines.append(f"*数据来源：Google News RSS + 海事行业RSS + Open-Meteo天气*")
+    lines.append("## Key Events")
+    lines.append("")
+    has_events = False
+    for r in reports:
+        events = r.get("key_events", [])
+        if events:
+            has_events = True
+            lines.append(f"**{r.get('country','')} / {r.get('port','')}**")
+            for e in events:
+                lines.append(f"- {e}")
+            lines.append("")
+    if not has_events:
+        lines.append("(no significant events reported)")
+        lines.append("")
+
+    lines.append("---")
+    lines.append(f"*Auto-generated {today} | Daily Port Broadcast*")
 
     return "\n".join(lines)
-
-
-if __name__ == "__main__":
-    # Test with sample data
-    sample_reports = [
-        {
-            "country": "中国", "port": "上海", "port_code": "CNSHA",
-            "summary": "上海港目前运营正常，无拥堵报告",
-            "is_port_closure": False, "congestion_level": "正常",
-            "closure_risk": "无", "confidence": "高"
-        }
-    ]
-    md = format_report(sample_reports, [], {}, [])
-    print(md)
