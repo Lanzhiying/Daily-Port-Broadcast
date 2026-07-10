@@ -1,11 +1,12 @@
 """
-Use Gemini (free API) to:
+Use Gemini 1.5 Flash (free tier) to:
 1. Classify news by country-port
 2. Generate Chinese summaries
 3. Detect port closures, congestion, etc.
 """
 import json
 import os
+import time
 import google.generativeai as genai
 
 
@@ -19,50 +20,50 @@ def build_port_context(ports):
     """Build a short port reference for the LLM prompt."""
     lines = []
     for p in ports:
-        lines.append(f"- {p['country']} / {p['port']} ({p['port_en']}) — 代码: {p['code']}")
+        lines.append(f"- {p['country']} / {p['port']} ({p['port_en']}) — code: {p['code']}")
     return "\n".join(lines)
 
 
-PROMPT_TEMPLATE = """你是一个港口航运情报分析助手。请根据以下新闻列表，按"国家-港口"分类整理，并生成简明中文摘要。
+PROMPT_TEMPLATE = """You are a port intelligence analyst. Classify the following news by country-port and generate concise summaries.
 
-## 监控港口
+## Monitored Ports
 {port_context}
 
-## 新闻列表
+## News Items
 {news_text}
 
-## 输出要求
-请严格按以下 JSON 格式输出（不要输出其他内容）：
+## Output Requirements
+Return ONLY valid JSON in this exact format (no markdown, no explanation):
 
 {{
   "reports": [
     {{
-      "country": "国家名",
-      "port": "港口中文名",
+      "country": "country name",
+      "port": "port name in Chinese",
       "port_code": "PORT_CODE",
-      "summary": "一句话中文摘要（50字以内）",
+      "summary": "one-line summary (under 50 words)",
       "is_port_closure": false,
-      "congestion_level": "正常/轻微拥堵/中度拥堵/严重拥堵",
-      "closure_risk": "无/低/中/高",
-      "confidence": "高/中/低"
+      "congestion_level": "normal/mild/moderate/severe",
+      "closure_risk": "none/low/medium/high",
+      "confidence": "high/medium/low"
     }}
   ],
   "no_match_news": [
     {{
-      "title": "原标题",
-      "reason": "无法匹配到监控港口的原因"
+      "title": "original title",
+      "reason": "why it doesn't match any monitored port"
     }}
   ]
 }}
 
-## 注意事项
-1. 只提取与上述监控港口直接相关的新闻
-2. 如果同一条新闻涉及多个港口，每个港口单独一条记录
-3. 封港判断标准：新闻中出现"closure/shutdown/suspension/关闭/暂停运营"等关键词
-4. 拥堵程度根据新闻描述判断：waiting time/delay/congestion/排队/延误/拥堵
-5. 封港风险预测：结合天气和新闻中提到的罢工/政策/维护等综合判断
-6. 无法匹配到任何监控港口的新闻放入 no_match_news
-7. 务必返回合法 JSON，不要加任何解释文字
+## Rules
+1. Only extract news directly related to the monitored ports above
+2. One record per port even if news mentions multiple ports
+3. Port closure: news mentions "closure/shutdown/suspension/halted/closed"
+4. Congestion: judge from "waiting time/delay/congestion/backlog/queue"
+5. Closure risk: consider weather + strikes + policy + maintenance mentioned in news
+6. News not matching any port goes to no_match_news
+7. Return valid JSON only, no extra text
 """
 
 
@@ -74,32 +75,34 @@ def organize_news(news_list, ports, weather_data=None):
         raise RuntimeError("GEMINI_API_KEY not set in environment")
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash")
+
+    # Use gemini-1.5-flash (more generous free tier than 2.0)
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
     # Build port context
     port_context = build_port_context(ports)
 
-    # Build news text
+    # Build news text (limit to 25 items to stay under token limits)
     news_items = []
-    for i, item in enumerate(news_list):
+    for i, item in enumerate(news_list[:25]):
         title = item.get("title", "")
-        summary = item.get("summary", "")[:300]  # truncate long summaries
-        news_items.append(f"[{i+1}] 标题: {title}\n    摘要: {summary}")
-    news_text = "\n".join(news_items[:30])  # limit to 30 items per call
+        summary = item.get("summary", "")[:200]
+        news_items.append(f"[{i+1}] Title: {title}\n    Summary: {summary}")
+    news_text = "\n".join(news_items)
 
-    # Add weather context if available
+    # Weather context
     weather_context = ""
     if weather_data:
         weather_lines = []
         for code, wd in weather_data.items():
             s = wd.get("summary", {})
-            if s:
+            if s and not wd.get("error"):
                 weather_lines.append(
                     f"- {wd['country']}/{wd['port']}({code}): "
-                    f"浪高={s.get('wave','?')}, 风速={s.get('wind','?')}, {s.get('trend','')}"
+                    f"wave={s.get('wave','?')}, wind={s.get('wind','?')}, {s.get('trend','')}"
                 )
         if weather_lines:
-            weather_context = "\n## 当前天气数据\n" + "\n".join(weather_lines)
+            weather_context = "\n## Current Weather\n" + "\n".join(weather_lines)
 
     prompt = PROMPT_TEMPLATE.format(
         port_context=port_context,
@@ -108,38 +111,46 @@ def organize_news(news_list, ports, weather_data=None):
     if weather_context:
         prompt += weather_context
 
-    # Call Gemini
-    try:
-        response = model.generate_content(
-            prompt,
-            generation_config={
-                "temperature": 0.2,
-                "max_output_tokens": 4096,
-            },
-        )
-        text = response.text.strip()
+    # Call Gemini with retry
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = model.generate_content(
+                prompt,
+                generation_config={
+                    "temperature": 0.2,
+                    "max_output_tokens": 4096,
+                },
+            )
+            text = response.text.strip()
 
-        # Strip markdown code fences if present
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1]
-            if text.endswith("```"):
-                text = text[:-3]
-        text = text.strip()
+            # Strip markdown code fences
+            if text.startswith("```"):
+                text = text.split("\n", 1)[1]
+                if text.endswith("```"):
+                    text = text[:-3]
+            text = text.strip()
 
-        result = json.loads(text)
-        return result
+            result = json.loads(text)
+            return result
 
-    except json.JSONDecodeError as e:
-        print(f"  ⚠️ Gemini returned invalid JSON: {e}")
-        print(f"  Raw response: {text[:500]}")
-        return {"reports": [], "no_match_news": [], "error": str(e)}
-    except Exception as e:
-        print(f"  ❌ Gemini API error: {e}")
-        return {"reports": [], "no_match_news": [], "error": str(e)}
+        except json.JSONDecodeError as e:
+            print(f"  Attempt {attempt+1}: invalid JSON: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(2 ** attempt)
+        except Exception as e:
+            err_msg = str(e)
+            if "429" in err_msg:
+                wait = 60
+                print(f"  Rate limited (429), waiting {wait}s...")
+                time.sleep(wait)
+                continue
+            print(f"  Gemini error: {e}")
+            return {"reports": [], "no_match_news": [], "error": str(e)}
+
+    return {"reports": [], "no_match_news": [], "error": "JSON parse failed after retries"}
 
 
 if __name__ == "__main__":
-    # Quick test
     ports = load_ports()
     print(f"Loaded {len(ports)} ports")
-    print(build_port_context(ports[:3]))

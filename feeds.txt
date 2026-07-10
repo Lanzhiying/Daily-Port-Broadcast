@@ -1,6 +1,4 @@
-# ==========================================
-# Google News RSS — 通用港口/航运搜索
-# ==========================================
+# Google News RSS — general port/shipping search
 https://news.google.com/rss/search?q=port+congestion&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=shipping+news&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=container+shipping&hl=en-US&gl=US&ceid=US:en
@@ -9,20 +7,14 @@ https://news.google.com/rss/search?q=port+closure&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=Panama+Canal+shipping&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=Suez+Canal+shipping&hl=en-US&gl=US&ceid=US:en
 
-# ==========================================
-# Google News RSS — 重点港口专项搜索
-# ==========================================
+# Google News RSS — key port specific
 https://news.google.com/rss/search?q=Singapore+Port+shipping&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=Shanghai+Port+shipping&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=Ningbo+Port+shipping&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=Shenzhen+Port+shipping&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=Port+Klang+shipping&hl=en-US&gl=US&ceid=US:en
 
-# ==========================================
-# 海事行业 RSS (专业源)
-# ==========================================
+# Maritime industry RSS (verified working)
 https://splash247.com/feed/
 https://gcaptain.com/feed/
-https://maritime-executive.com/feed/
 https://www.marineinsight.com/feed/
-https://www.porttechnology.org/feed/

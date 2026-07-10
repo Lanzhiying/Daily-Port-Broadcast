@@ -2,6 +2,7 @@
 Fetch marine weather data from Open-Meteo API (free, no key required).
 """
 import json
+import time
 import httpx
 from datetime import datetime, timedelta
 
@@ -13,7 +14,7 @@ def load_ports(config_path="config/ports.json"):
 
 
 def fetch_weather_for_port(port):
-    """Fetch 7-day marine weather for a single port."""
+    """Fetch 7-day marine weather for a single port with retry."""
     url = "https://marine-api.open-meteo.com/v1/marine"
     params = {
         "latitude": port["lat"],
@@ -31,9 +32,19 @@ def fetch_weather_for_port(port):
         "timezone": "Asia/Shanghai",
         "forecast_days": 7,
     }
-    resp = httpx.get(url, params=params, timeout=30)
-    resp.raise_for_status()
-    return resp.json()
+
+    max_retries = 2
+    last_error = None
+    for attempt in range(max_retries + 1):
+        try:
+            resp = httpx.get(url, params=params, timeout=30.0)
+            resp.raise_for_status()
+            return resp.json()
+        except Exception as e:
+            last_error = e
+            if attempt < max_retries:
+                time.sleep(3)
+    raise last_error
 
 
 def classify_sea_state(data):
@@ -50,43 +61,47 @@ def classify_sea_state(data):
     if wave_key in daily and today_idx < len(daily[wave_key]):
         wave_h = daily[wave_key][today_idx]
         if wave_h is None:
-            result["wave"] = "无数据"
+            result["wave"] = "no data"
         elif wave_h < 1.0:
-            result["wave"] = f"微浪 ({wave_h:.1f}m)"
+            result["wave"] = f"slight ({wave_h:.1f}m)"
         elif wave_h < 2.0:
-            result["wave"] = f"轻浪 ({wave_h:.1f}m)"
+            result["wave"] = f"moderate ({wave_h:.1f}m)"
         elif wave_h < 3.0:
-            result["wave"] = f"中浪 ({wave_h:.1f}m)"
+            result["wave"] = f"rough ({wave_h:.1f}m)"
         elif wave_h < 4.0:
-            result["wave"] = f"大浪 ({wave_h:.1f}m) ⚠️"
+            result["wave"] = f"very rough ({wave_h:.1f}m) !!"
         else:
-            result["wave"] = f"巨浪 ({wave_h:.1f}m) 🚫"
+            result["wave"] = f"high ({wave_h:.1f}m) DANGER"
 
-    # Wind speed classification
+    # Wind speed (Beaufort scale)
     wind_key = "wind_speed_10m_max"
     if wind_key in daily and today_idx < len(daily[wind_key]):
         wind = daily[wind_key][today_idx]
         if wind is None:
-            result["wind"] = "无数据"
-        elif wind < 15:
-            result["wind"] = f"微风 ({wind:.1f} km/h)"
-        elif wind < 30:
-            result["wind"] = f"强风 ({wind:.1f} km/h)"
+            result["wind"] = "no data"
+        elif wind < 11:
+            result["wind"] = f"light breeze ({wind:.0f} km/h)"
+        elif wind < 20:
+            result["wind"] = f"moderate ({wind:.0f} km/h)"
+        elif wind < 29:
+            result["wind"] = f"fresh ({wind:.0f} km/h)"
+        elif wind < 39:
+            result["wind"] = f"strong ({wind:.0f} km/h) !!"
         elif wind < 50:
-            result["wind"] = f"大风 ({wind:.1f} km/h) ⚠️"
+            result["wind"] = f"gale ({wind:.0f} km/h) !!"
         else:
-            result["wind"] = f"暴风 ({wind:.1f} km/h) 🚫"
+            result["wind"] = f"storm ({wind:.0f} km/h) DANGER"
 
-    # 3-day trend: increasing or decreasing
+    # 3-day trend
     if wave_key in daily and len(daily[wave_key]) >= 3:
         vals = daily[wave_key][:3]
         if all(v is not None for v in vals):
             if vals[2] > vals[0] * 1.3:
-                result["trend"] = "📈 未来3天浪高呈上升趋势"
+                result["trend"] = "worsening (waves increasing)"
             elif vals[2] < vals[0] * 0.7:
-                result["trend"] = "📉 未来3天浪高呈下降趋势"
+                result["trend"] = "improving (waves decreasing)"
             else:
-                result["trend"] = "➡️ 未来3天海况基本稳定"
+                result["trend"] = "stable"
 
     return result
 
@@ -104,9 +119,9 @@ def fetch_all_weather(ports):
                 "raw": raw,
                 "summary": summary,
             }
-            print(f"  ✅ {port['port']} ({port['code']}): {summary.get('wave','?')} / {summary.get('wind','?')}")
+            print(f"  OK {port['port']} ({port['code']}): {summary.get('wave','?')} / {summary.get('wind','?')}")
         except Exception as e:
-            print(f"  ❌ {port['port']} ({port['code']}): {e}")
+            print(f"  FAIL {port['port']} ({port['code']}): {e}")
             weather_data[port["code"]] = {
                 "port": port["port"],
                 "country": port["country"],
