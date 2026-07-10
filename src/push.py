@@ -53,7 +53,8 @@ def push_report(title, md_content):
     """Send report via Gmail SMTP."""
     smtp_user = os.environ.get("SMTP_USER")
     smtp_pass = os.environ.get("SMTP_PASS")
-    mail_to = os.environ.get("MAIL_TO")
+    mail_to_raw = os.environ.get("MAIL_TO")
+    mail_to = [m.strip() for m in mail_to_raw.split(",") if m.strip()] if mail_to_raw else []
 
     missing = []
     if not smtp_user: missing.append("SMTP_USER")
@@ -80,7 +81,7 @@ def push_report(title, md_content):
         server = smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
         server.starttls()
         server.login(smtp_user, smtp_pass)
-        server.sendmail(smtp_user, [mail_to], msg.as_string())
+        server.sendmail(smtp_user, mail_to, msg.as_string())
         server.quit()
         print(f"  Email sent to {mail_to}")
         return {"success": True}
