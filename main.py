@@ -1,14 +1,15 @@
 import feedparser
 
-# MarineLink 航运新闻 RSS
-RSS_URL = "https://www.marinelink.com/rss/news"
+RSS_URL = "https://feeds.bbci.co.uk/news/world/rss.xml"
 
-print("正在获取新闻...")
+print("正在获取 RSS...")
+print("RSS:", RSS_URL)
 
 feed = feedparser.parse(RSS_URL)
 
-print(f"共获取到 {len(feed.entries)} 条新闻\n")
+print("状态：", feed.get("status"))
+print("标题：", feed.feed.get("title"))
+print("新闻数量：", len(feed.entries))
 
-# 只显示最新 5 条
-for i, item in enumerate(feed.entries[:5], start=1):
-    print(f"{i}. {item.title}")
+for item in feed.entries[:5]:
+    print(item.title)
