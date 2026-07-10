@@ -1,3 +1,4 @@
 https://feeds.bbci.co.uk/news/world/rss.xml
-https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6311
-https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6936
+https://rss.nytimes.com/services/xml/rss/nyt/World.xml
+https://www.porttechnology.org/feed/
+https://www.maritime-executive.com/rss
