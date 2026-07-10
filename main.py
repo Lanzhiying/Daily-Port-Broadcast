@@ -2,6 +2,7 @@
 Daily Port Broadcast — 港口每日广播系统
 Pipeline: fetch → filter → dedup → weather → organize → format → push
 """
+import os
 import sys
 import traceback
 from datetime import datetime
@@ -17,94 +18,93 @@ from src.push import push_to_wechat
 
 def main():
     print("=" * 60)
-    print(f"🌊 Daily Port Broadcast — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    print(f"Port Broadcast {now_str}")
     print("=" * 60)
 
     # Step 1: Load port config
-    print("
-📌 Step 1: 加载港口配置...")
+    print()
+    print("Step 1: Loading ports...")
     ports = load_ports()
-    print(f"   已加载 {len(ports)} 个港口")
+    print(f"  Loaded {len(ports)} ports")
 
     # Step 2: Fetch news from RSS
-    print("
-📡 Step 2: 抓取 RSS 新闻...")
+    print()
+    print("Step 2: Fetching RSS news...")
     try:
         news = fetch_news()
-        print(f"   抓取到 {len(news)} 条新闻")
+        print(f"  Fetched {len(news)} items")
     except Exception as e:
-        print(f"   ❌ 抓取失败: {e}")
+        print(f"  FAILED: {e}")
         news = []
 
     # Step 3: Filter by keywords
-    print("
-🔍 Step 3: 关键词过滤...")
+    print()
+    print("Step 3: Keyword filtering...")
     filtered = filter_news(news)
-    print(f"   过滤后: {len(filtered)} 条 (过滤掉 {len(news)-len(filtered)} 条)")
+    dropped = len(news) - len(filtered)
+    print(f"  After filter: {len(filtered)} (dropped {dropped})")
 
     # Step 4: Deduplicate
-    print("
-🧹 Step 4: 去重...")
+    print()
+    print("Step 4: Dedup...")
     unique = deduplicate(filtered)
-    print(f"   去重后: {len(unique)} 条 (去除 {len(filtered)-len(unique)} 条重复)")
+    dups = len(filtered) - len(unique)
+    print(f"  After dedup: {len(unique)} (removed {dups} duplicates)")
 
     # Step 5: Fetch weather
-    print("
-🌤️  Step 5: 获取港口天气...")
+    print()
+    print("Step 5: Fetching weather...")
     try:
         weather_data = fetch_all_weather(ports)
     except Exception as e:
-        print(f"   ⚠️ 天气获取异常: {e}")
+        print(f"  Weather error: {e}")
         weather_data = {}
 
     # Step 6: Organize with Gemini
-    print("
-🤖 Step 6: Gemini 分类分析...")
+    print()
+    print("Step 6: Gemini classification...")
     try:
         organized = organize_news(unique, ports, weather_data)
         reports = organized.get("reports", [])
         no_match = organized.get("no_match_news", [])
-        print(f"   分类出 {len(reports)} 条港口报告, {len(no_match)} 条未匹配新闻")
+        print(f"  Reports: {len(reports)}, unmatched: {len(no_match)}")
     except Exception as e:
-        print(f"   ❌ Gemini 分析失败: {e}")
+        print(f"  Gemini failed: {e}")
         traceback.print_exc()
         reports = []
         no_match = []
 
     # Step 7: Format markdown report
-    print("
-📝 Step 7: 生成 Markdown 简报...")
+    print()
+    print("Step 7: Generating report...")
     try:
         report_md = format_report(reports, no_match, weather_data, ports)
-        # Save to file for reference
         date_str = datetime.now().strftime("%Y-%m-%d")
         os.makedirs("reports", exist_ok=True)
         with open(f"reports/{date_str}.md", "w", encoding="utf-8") as f:
             f.write(report_md)
-        print(f"   报告已保存至 reports/{date_str}.md")
-        print(f"   报告长度: {len(report_md)} 字符")
+        print(f"  Report saved: reports/{date_str}.md ({len(report_md)} chars)")
     except Exception as e:
-        print(f"   ❌ 格式化失败: {e}")
+        print(f"  Format failed: {e}")
         report_md = ""
 
     # Step 8: Push to WeChat
-    print("
-📲 Step 8: 推送到微信...")
+    print()
+    print("Step 8: Pushing to WeChat...")
     try:
-        title = f"🌊 港口日报 {datetime.now().strftime('%Y-%m-%d')}"
-        result = push_to_wechat(title, report_md)
+        title = f"Port Report {datetime.now().strftime("%Y-%m-%d")}"
+        push_to_wechat(title, report_md)
     except Exception as e:
-        print(f"   ❌ 推送失败: {e}")
-        # Don't fail the whole pipeline on push failure
-        result = {"error": str(e)}
+        print(f"  Push failed: {e}")
 
     # Summary
-    print("
-" + "=" * 60)
-    print("✅ Daily Port Broadcast 完成")
-    print(f"   新闻: {len(news)} → 过滤: {len(filtered)} → 去重: {len(unique)}")
-    print(f"   天气: {len(weather_data)} 港口")
-    print(f"   报告: {len(reports)} 条 / 未匹配: {len(no_match)} 条")
+    print()
+    print("=" * 60)
+    print("Done.")
+    print(f"  News: {len(news)} -> filtered: {len(filtered)} -> deduped: {len(unique)}")
+    print(f"  Weather: {len(weather_data)} ports")
+    print(f"  Report: {len(reports)} items, {len(no_match)} unmatched")
     print("=" * 60)
 
 
