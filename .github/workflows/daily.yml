@@ -2,9 +2,9 @@ name: Daily Port Report
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 0 * * *"   # UTC 0:00 = 北京时间 8:00
 
-  workflow_dispatch:
+  workflow_dispatch:       # 手动触发
 
 jobs:
   daily-report:
@@ -22,6 +22,26 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run Agent
+      - name: Run Daily Port Broadcast
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
         run: |
           python main.py
+
+      - name: Upload daily report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-report-${{ github.run_id }}
+          path: reports/
+          retention-days: 30
+
+      - name: Commit reports back to repo
+        if: always()
+        run: |
+          git config user.name "Daily Port Bot"
+          git config user.email "bot@daily-port.local"
+          git add reports/ *.json 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "📊 Daily report $(date +%Y-%m-%d)"
+          git push || echo "Push skipped (no changes or permission)"

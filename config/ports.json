@@ -1,0 +1,166 @@
+{
+  "ports": [
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "上海",
+      "port_en": "Shanghai",
+      "lat": 31.23,
+      "lon": 121.47,
+      "code": "CNSHA"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "宁波舟山",
+      "port_en": "Ningbo-Zhoushan",
+      "lat": 29.87,
+      "lon": 121.55,
+      "code": "CNNGB"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "深圳",
+      "port_en": "Shenzhen",
+      "lat": 22.51,
+      "lon": 114.07,
+      "code": "CNSZX"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "青岛",
+      "port_en": "Qingdao",
+      "lat": 36.07,
+      "lon": 120.38,
+      "code": "CNQDG"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "广州",
+      "port_en": "Guangzhou",
+      "lat": 23.09,
+      "lon": 113.45,
+      "code": "CNGUA"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "天津",
+      "port_en": "Tianjin",
+      "lat": 38.98,
+      "lon": 117.75,
+      "code": "CNTJG"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "厦门",
+      "port_en": "Xiamen",
+      "lat": 24.45,
+      "lon": 118.08,
+      "code": "CNXMN"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "大连",
+      "port_en": "Dalian",
+      "lat": 38.92,
+      "lon": 121.65,
+      "code": "CNDLC"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "连云港",
+      "port_en": "Lianyungang",
+      "lat": 34.6,
+      "lon": 119.45,
+      "code": "CNLYG"
+    },
+    {
+      "country": "中国",
+      "country_en": "China",
+      "port": "香港",
+      "port_en": "Hong Kong",
+      "lat": 22.3,
+      "lon": 114.17,
+      "code": "HKHKG"
+    },
+    {
+      "country": "新加坡",
+      "country_en": "Singapore",
+      "port": "新加坡",
+      "port_en": "Singapore",
+      "lat": 1.26,
+      "lon": 103.76,
+      "code": "SGSIN"
+    },
+    {
+      "country": "马来西亚",
+      "country_en": "Malaysia",
+      "port": "巴生港",
+      "port_en": "Port Klang",
+      "lat": 2.99,
+      "lon": 101.36,
+      "code": "MYPKG"
+    },
+    {
+      "country": "马来西亚",
+      "country_en": "Malaysia",
+      "port": "丹戎帕拉帕斯",
+      "port_en": "Tanjung Pelepas",
+      "lat": 1.36,
+      "lon": 103.55,
+      "code": "MYTPP"
+    },
+    {
+      "country": "泰国",
+      "country_en": "Thailand",
+      "port": "林查班",
+      "port_en": "Laem Chabang",
+      "lat": 13.07,
+      "lon": 100.89,
+      "code": "THLCB"
+    },
+    {
+      "country": "印度尼西亚",
+      "country_en": "Indonesia",
+      "port": "雅加达",
+      "port_en": "Jakarta",
+      "lat": -6.1,
+      "lon": 106.88,
+      "code": "IDJKT"
+    },
+    {
+      "country": "越南",
+      "country_en": "Vietnam",
+      "port": "胡志明",
+      "port_en": "Ho Chi Minh City",
+      "lat": 10.65,
+      "lon": 106.75,
+      "code": "VNSGN"
+    },
+    {
+      "country": "菲律宾",
+      "country_en": "Philippines",
+      "port": "马尼拉",
+      "port_en": "Manila",
+      "lat": 14.58,
+      "lon": 120.97,
+      "code": "PHMNL"
+    },
+    {
+      "country": "泰国",
+      "country_en": "Thailand",
+      "port": "曼谷",
+      "port_en": "Bangkok",
+      "lat": 13.72,
+      "lon": 100.55,
+      "code": "THBKK"
+    }
+  ]
+}
