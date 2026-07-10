@@ -1,4 +1,4 @@
 feedparser
-google-genai
+google-generativeai
 httpx
 requests
