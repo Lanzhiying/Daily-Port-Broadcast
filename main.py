@@ -13,7 +13,7 @@ from src.deduplicate import deduplicate
 from src.weather import load_ports, fetch_all_weather
 from src.organize import organize_news
 from src.format import format_report
-from src.push import push_to_wechat
+from src.push import push_report
 
 
 def main():
@@ -89,14 +89,14 @@ def main():
         print(f"  Format failed: {e}")
         report_md = ""
 
-    # Step 8: Push to WeChat
+    # Step 8: Send email report
     print()
-    print("Step 8: Pushing to WeChat...")
+    print("Step 8: Sending email...")
     try:
         title = f"Port Report {datetime.now().strftime('%Y-%m-%d')}"
-        push_to_wechat(title, report_md)
+        push_report(title, report_md)
     except Exception as e:
-        print(f"  Push failed: {e}")
+        print(f"  Email failed: {e}")
 
     # Summary
     print()
