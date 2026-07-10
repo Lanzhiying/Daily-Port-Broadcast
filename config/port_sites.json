@@ -1,0 +1,84 @@
+{
+  "sources": [
+    {
+      "name": "航运在线",
+      "url": "https://www.sol.com.cn/",
+      "encoding": "gbk",
+      "selector": "a",
+      "filter_keywords": [
+        "港口",
+        "码头",
+        "停航",
+        "封港",
+        "拥堵",
+        "关闭",
+        "暂停"
+      ]
+    },
+    {
+      "name": "中国水运网",
+      "url": "https://www.zgsyb.com/",
+      "encoding": "utf-8",
+      "selector": "a",
+      "filter_keywords": [
+        "港口",
+        "码头",
+        "停航",
+        "封港",
+        "拥堵",
+        "关闭",
+        "暂停",
+        "通航"
+      ]
+    },
+    {
+      "name": "海事服务网CNSS",
+      "url": "https://www.cnss.com.cn/",
+      "encoding": "utf-8",
+      "selector": "a",
+      "filter_keywords": [
+        "港口",
+        "码头",
+        "停航",
+        "封港",
+        "拥堵",
+        "关闭",
+        "暂停"
+      ]
+    },
+    {
+      "name": "信德海事",
+      "url": "https://www.xindemarinenews.com/",
+      "encoding": "utf-8",
+      "selector": "a",
+      "filter_keywords": [
+        "port",
+        "港口",
+        "terminal",
+        "码头",
+        "closure",
+        "关闭",
+        "congestion",
+        "拥堵",
+        "shipping",
+        "航运"
+      ]
+    },
+    {
+      "name": "MarineLink",
+      "url": "https://www.marinelink.com/news",
+      "encoding": "utf-8",
+      "selector": "a",
+      "filter_keywords": [
+        "port",
+        "terminal",
+        "closure",
+        "congestion",
+        "shipping",
+        "vessel",
+        "container",
+        "berth"
+      ]
+    }
+  ]
+}

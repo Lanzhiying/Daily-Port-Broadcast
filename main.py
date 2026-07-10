@@ -14,6 +14,7 @@ from src.weather import load_ports, fetch_all_weather
 from src.organize import organize_news
 from src.format import format_report
 from src.push import push_report
+from src.scrape_web import scrape_all
 
 
 def main():
@@ -28,9 +29,19 @@ def main():
     ports = load_ports()
     print(f"  Loaded {len(ports)} ports")
 
-    # Step 2: Fetch news from RSS
+    # Step 2: Scrape port authority sites
     print()
-    print("Step 2: Fetching RSS news...")
+    print("Step 2: Scraping port news sites...")
+    try:
+        scraped = scrape_all()
+        print(f"  Scraped {len(scraped)} items from web")
+    except Exception as e:
+        print(f"  Scraping failed: {e}")
+        scraped = []
+
+    # Step 9: Fetch news from RSS
+    print()
+    print("Step 9: Fetching RSS news...")
     try:
         news = fetch_news()
         print(f"  Fetched {len(news)} items")
@@ -38,32 +49,33 @@ def main():
         print(f"  FAILED: {e}")
         news = []
 
-    # Step 3: Filter by keywords
+    # Step 9: Filter by keywords
     print()
-    print("Step 3: Keyword filtering...")
-    filtered = filter_news(news)
+    print("Step 9: Keyword filtering...")
+    filtered = filter_news(all_raw_news)
     dropped = len(news) - len(filtered)
+    dropped = len(all_raw_news) - len(filtered)
     print(f"  After filter: {len(filtered)} (dropped {dropped})")
 
-    # Step 4: Deduplicate
+    # Step 9: Deduplicate
     print()
-    print("Step 4: Dedup...")
+    print("Step 9: Dedup...")
     unique = deduplicate(filtered)
     dups = len(filtered) - len(unique)
     print(f"  After dedup: {len(unique)} (removed {dups} duplicates)")
 
-    # Step 5: Fetch weather
+    # Step 9: Fetch weather
     print()
-    print("Step 5: Fetching weather...")
+    print("Step 9: Fetching weather...")
     try:
         weather_data = fetch_all_weather(ports)
     except Exception as e:
         print(f"  Weather error: {e}")
         weather_data = {}
 
-    # Step 6: Organize with Gemini
+    # Step 9: Organize with Gemini
     print()
-    print("Step 6: Gemini classification...")
+    print("Step 9: Gemini classification...")
     try:
         organized = organize_news(unique, ports, weather_data)
         reports = organized.get("closures", []) if isinstance(organized, dict) else []
@@ -76,9 +88,9 @@ def main():
         organized = {"reports": [], "summary": "", "alerts": []}
         reports = []
 
-    # Step 7: Format markdown report
+    # Step 9: Format markdown report
     print()
-    print("Step 7: Generating report...")
+    print("Step 9: Generating report...")
     try:
         report_md = format_report(organized, None, weather_data, ports)
         date_str = datetime.now().strftime("%Y-%m-%d")
@@ -90,9 +102,9 @@ def main():
         print(f"  Format failed: {e}")
         report_md = ""
 
-    # Step 8: Send email report
+    # Step 9: Send email report
     print()
-    print("Step 8: Sending email...")
+    print("Step 9: Sending email...")
     try:
         title = f"Port Report {datetime.now().strftime('%Y-%m-%d')}"
         push_report(title, report_md)
@@ -103,7 +115,7 @@ def main():
     print()
     print("=" * 60)
     print("Done.")
-    print(f"  News: {len(news)} -> filtered: {len(filtered)} -> deduped: {len(unique)}")
+    print(f"  Raw: {len(all_raw_news)} -> filtered: {len(filtered)} -> deduped: {len(unique)}")
     print(f"  Weather: {len(weather_data)} ports")
     total_reported = (
         len(organized.get("closures", [])) +
