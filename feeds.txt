@@ -19,6 +19,12 @@ https://news.google.com/rss/search?q=Tianjin+port+shipping&hl=en-US&gl=US&ceid=U
 https://news.google.com/rss/search?q=Singapore+port+congestion&hl=en-US&gl=US&ceid=US:en
 https://news.google.com/rss/search?q=Port+Klang+Malaysia+ship&hl=en-US&gl=US&ceid=US:en
 
+
+# --- Taiwan & Japan ports ---
+https://news.google.com/rss/search?q=Kaohsiung+port+ship&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=Tokyo+port+Yokohama+ship&hl=en-US&gl=US&ceid=US:en
+https://news.google.com/rss/search?q=Kobe+Osaka+port+ship&hl=en-US&gl=US&ceid=US:en
+
 # --- Maritime industry news ---
 https://splash247.com/feed/
 https://gcaptain.com/feed/

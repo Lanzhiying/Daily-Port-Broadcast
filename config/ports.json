@@ -161,6 +161,78 @@
       "lat": 13.72,
       "lon": 100.55,
       "code": "THBKK"
+    },
+    {
+      "country": "中国台湾",
+      "country_en": "Taiwan",
+      "port": "高雄",
+      "port_en": "Kaohsiung",
+      "lat": 22.55,
+      "lon": 120.31,
+      "code": "TWKHH"
+    },
+    {
+      "country": "中国台湾",
+      "country_en": "Taiwan",
+      "port": "基隆",
+      "port_en": "Keelung",
+      "lat": 25.15,
+      "lon": 121.75,
+      "code": "TWKEL"
+    },
+    {
+      "country": "中国台湾",
+      "country_en": "Taiwan",
+      "port": "台中",
+      "port_en": "Taichung",
+      "lat": 24.29,
+      "lon": 120.52,
+      "code": "TWTXG"
+    },
+    {
+      "country": "日本",
+      "country_en": "Japan",
+      "port": "东京",
+      "port_en": "Tokyo",
+      "lat": 35.62,
+      "lon": 139.79,
+      "code": "JPTYO"
+    },
+    {
+      "country": "日本",
+      "country_en": "Japan",
+      "port": "横滨",
+      "port_en": "Yokohama",
+      "lat": 35.45,
+      "lon": 139.65,
+      "code": "JPYOK"
+    },
+    {
+      "country": "日本",
+      "country_en": "Japan",
+      "port": "神户",
+      "port_en": "Kobe",
+      "lat": 34.68,
+      "lon": 135.19,
+      "code": "JPUKB"
+    },
+    {
+      "country": "日本",
+      "country_en": "Japan",
+      "port": "名古屋",
+      "port_en": "Nagoya",
+      "lat": 35.05,
+      "lon": 136.85,
+      "code": "JPNGO"
+    },
+    {
+      "country": "日本",
+      "country_en": "Japan",
+      "port": "大阪",
+      "port_en": "Osaka",
+      "lat": 34.64,
+      "lon": 135.43,
+      "code": "JPOSA"
     }
   ]
 }
