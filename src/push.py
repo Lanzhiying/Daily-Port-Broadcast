@@ -74,7 +74,7 @@ def push_report(title, md_content):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = title
     msg["From"] = smtp_user
-    msg["To"] = mail_to
+    msg["To"] = ", ".join(mail_to)
     msg.attach(MIMEText(full_html, "html", "utf-8"))
 
     try:
