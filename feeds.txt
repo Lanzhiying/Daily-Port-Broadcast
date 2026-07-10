@@ -25,3 +25,6 @@ https://news.google.com/rss/search?q=shipping+disruption+force+majeure&hl=en-US&
 https://news.google.com/rss/search?q=Singapore+port+Shanghai+container&hl=en-US&gl=US&ceid=US:en
 https://splash247.com/feed/
 https://gcaptain.com/feed/
+# === 国际组织 (International orgs) ===
+https://www.imo.org/en/pages/pressbriefingsrss.aspx
+https://www.imo.org/en/pages/meetingsrss.aspx
