@@ -93,7 +93,7 @@ def main():
     print()
     print("Step 8: Pushing to WeChat...")
     try:
-        title = f"Port Report {datetime.now().strftime("%Y-%m-%d")}"
+        title = f"Port Report {datetime.now().strftime('%Y-%m-%d')}"
         push_to_wechat(title, report_md)
     except Exception as e:
         print(f"  Push failed: {e}")
