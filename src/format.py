@@ -118,16 +118,20 @@ def format_report(data, no_match_news, weather_data, ports):
         lines.append("---")
         lines.append("## 天气风险总览")
         lines.append("")
-        lines.append("| 港口 | 浪高 | 风速 | 阵风 | 涌浪 | 降雨 | 趋势 | 风险 |")
-        lines.append("|------|------|------|------|------|------|------|------|")
+        lines.append("| 港口 | 浪高 | 风速 | 阵风 | 天气 | 风险等级 | 风险说明 |")
+        lines.append("|------|------|------|------|------|----------|----------|")
         flag_map = {"critical":"严重","high":"高风险","moderate":"注意","low":"正常","unknown":"无数据"}
         for code, wd in weather_data.items():
             r = wd.get("risk", {})
             risk = r.get("risk","?")
             flag = flag_map.get(risk, risk)
+            weather_desc = r.get("weather","-")
+            trend = r.get("trend","-")
+            alerts = r.get("alerts",[])
+            reason = "; ".join(alerts) if alerts else (trend if trend != "-" else "-")
             lines.append(
                 f"| {wd.get('country','?')} {wd.get('port','?')} | {r.get('wave','-')} | {r.get('wind','-')} | "
-                f"{r.get('gust','-')} | {r.get('swell','-')} | {r.get('rain','-')} | {r.get('trend','-')} | **{flag}** |"
+                f"{r.get('gust','-')} | {weather_desc} | **{flag}** | {reason} |"
             )
         lines.append("")
 
