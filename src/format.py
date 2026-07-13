@@ -123,7 +123,7 @@ def format_report(data, no_match_news, weather_data, ports):
         for code, wd in weather_data.items():
             r = wd.get("risk", {})
             risk = r.get("risk","?")
-    flag_map = {"critical":"CRITICAL","high":"HIGH","moderate":"MOD","low":"OK"}
+    flag_map = {"critical":"CRITICAL","high":"HIGH","moderate":"MOD","low":"OK","unknown":"NODATA"}
     flag = flag_map.get(risk, risk)
             lines.append(
                 f"| {wd.get('country','?')} {wd.get('port','?')} | {r.get('wave','-')} | {r.get('wind','-')} | "

@@ -142,8 +142,10 @@ def classify_risk(marine, weather, port_name):
     else:
         r["trend"] = "-"
 
+    # Risk determination: prioritize weather data, fall back to marine
     if "risk" not in r:
-        r["risk"] = "low"
+        has_any_data = (r.get("wave") and r.get("wave") != "-") or (r.get("wind") and r.get("wind") != "-")
+        r["risk"] = "low" if has_any_data else "unknown"
     r["alerts"] = alerts
     return r
 
@@ -161,7 +163,8 @@ def fetch_all_weather(ports):
                 "risk": risk,
             }
             lvl = risk.get("risk","?")
-            flag = {("critical","!!!CRITICAL"),("high","!!HIGH"),("moderate","MOD"),("low","OK")}.get(lvl,lvl)
+            flag_map = {"critical":"!!!CRITICAL","high":"!!HIGH","moderate":"MOD","low":"OK","unknown":"NO DATA"}
+            flag = flag_map.get(lvl, lvl)
             print(f"  [{flag}] {port['port']}: w={risk.get('wave','?')} "
                   f"wind={risk.get('wind','?')} gust={risk.get('gust','?')} "
                   f"swell={risk.get('swell','?')} trend={risk.get('trend','?')}")
