@@ -120,7 +120,7 @@ def format_report(data, no_match_news, weather_data, ports):
         lines.append("")
         lines.append("| 港口 | 浪高 | 风速 | 阵风 | 涌浪 | 降雨 | 趋势 | 风险 |")
         lines.append("|------|------|------|------|------|------|------|------|")
-        flag_map = {"critical":"CRITICAL","high":"HIGH","moderate":"MOD","low":"OK","unknown":"?"}
+        flag_map = {"critical":"严重","high":"高风险","moderate":"注意","low":"正常","unknown":"无数据"}
         for code, wd in weather_data.items():
             r = wd.get("risk", {})
             risk = r.get("risk","?")

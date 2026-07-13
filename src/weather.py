@@ -163,7 +163,7 @@ def fetch_all_weather(ports):
                 "risk": risk,
             }
             lvl = risk.get("risk","?")
-            flag_map = {"critical":"!!!CRITICAL","high":"!!HIGH","moderate":"MOD","low":"OK","unknown":"NO DATA"}
+            flag_map = {"critical":"严重","high":"高风险","moderate":"注意","low":"正常","unknown":"无数据"}
             flag = flag_map.get(lvl, lvl)
             print(f"  [{flag}] {port['port']}: w={risk.get('wave','?')} "
                   f"wind={risk.get('wind','?')} gust={risk.get('gust','?')} "
