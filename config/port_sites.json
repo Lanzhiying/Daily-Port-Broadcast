@@ -1,26 +1,80 @@
 {
-  "sources": [
+  "firecrawl_targets": [
     {
-      "name": "航运在线",
+      "name": "MPA Singapore Port Marine Notices",
+      "url": "https://www.mpa.gov.sg/port-marine-operations/port-marine-notices",
+      "desc": "新加坡港务局通航公告"
+    },
+    {
+      "name": "上海港务集团公告",
+      "url": "https://www.portshanghai.com.cn/",
+      "desc": "SIPG notices"
+    },
+    {
+      "name": "宁波舟山港公告",
+      "url": "https://www.nbport.com.cn/",
+      "desc": "宁波舟山港通知"
+    },
+    {
+      "name": "天津港公告",
+      "url": "https://www.ptacn.com/",
+      "desc": "天津港通知"
+    },
+    {
+      "name": "高雄港公告",
+      "url": "https://kh.twport.com.tw/",
+      "desc": "高雄港务"
+    },
+    {
+      "name": "釜山港公告",
+      "url": "https://www.busanpa.com/",
+      "desc": "Busan Port Authority"
+    },
+    {
+      "name": "航运在线港口新闻",
       "url": "https://www.sol.com.cn/",
-      "encoding": "gbk",
-      "selector": "a",
-      "filter_keywords": [
+      "desc": "Chinese shipping news"
+    },
+    {
+      "name": "海事服务网",
+      "url": "https://www.cnss.com.cn/",
+      "desc": "China maritime service"
+    }
+  ],
+  "regex_targets": [
+    {
+      "name": "信德海事",
+      "url": "https://www.xindemarinenews.com/",
+      "encoding": "utf-8",
+      "keywords": [
+        "port",
         "港口",
+        "terminal",
         "码头",
-        "停航",
-        "封港",
-        "拥堵",
+        "closure",
         "关闭",
-        "暂停"
+        "congestion",
+        "拥堵"
+      ]
+    },
+    {
+      "name": "MarineLink",
+      "url": "https://www.marinelink.com/news",
+      "encoding": "utf-8",
+      "keywords": [
+        "port",
+        "terminal",
+        "closure",
+        "congestion",
+        "shipping",
+        "vessel"
       ]
     },
     {
       "name": "中国水运网",
       "url": "https://www.zgsyb.com/",
       "encoding": "utf-8",
-      "selector": "a",
-      "filter_keywords": [
+      "keywords": [
         "港口",
         "码头",
         "停航",
@@ -29,55 +83,6 @@
         "关闭",
         "暂停",
         "通航"
-      ]
-    },
-    {
-      "name": "海事服务网CNSS",
-      "url": "https://www.cnss.com.cn/",
-      "encoding": "utf-8",
-      "selector": "a",
-      "filter_keywords": [
-        "港口",
-        "码头",
-        "停航",
-        "封港",
-        "拥堵",
-        "关闭",
-        "暂停"
-      ]
-    },
-    {
-      "name": "信德海事",
-      "url": "https://www.xindemarinenews.com/",
-      "encoding": "utf-8",
-      "selector": "a",
-      "filter_keywords": [
-        "port",
-        "港口",
-        "terminal",
-        "码头",
-        "closure",
-        "关闭",
-        "congestion",
-        "拥堵",
-        "shipping",
-        "航运"
-      ]
-    },
-    {
-      "name": "MarineLink",
-      "url": "https://www.marinelink.com/news",
-      "encoding": "utf-8",
-      "selector": "a",
-      "filter_keywords": [
-        "port",
-        "terminal",
-        "closure",
-        "congestion",
-        "shipping",
-        "vessel",
-        "container",
-        "berth"
       ]
     }
   ]
