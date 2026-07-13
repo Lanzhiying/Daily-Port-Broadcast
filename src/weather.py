@@ -1,137 +1,156 @@
 """
-Fetch marine weather data from Open-Meteo API (free, no key required).
+Marine weather + typhoon risk detection via Open-Meteo.
+Flags high-risk ports before sending to Gemini.
 """
-import json
-import time
-import httpx
-from datetime import datetime, timedelta
+import json, time, httpx
 
 
 def load_ports(config_path="config/ports.json"):
     with open(config_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
-    return data["ports"]
+        return json.load(f)["ports"]
 
 
 def fetch_weather_for_port(port):
-    """Fetch 7-day marine weather for a single port with retry."""
     url = "https://marine-api.open-meteo.com/v1/marine"
     params = {
-        "latitude": port["lat"],
-        "longitude": port["lon"],
+        "latitude": port["lat"], "longitude": port["lon"],
         "daily": [
-            "wave_height_max",
-            "wave_direction_dominant",
-            "wind_wave_height_max",
-            "wind_wave_direction_dominant",
-            "swell_wave_height_max",
-            "swell_wave_direction_dominant",
-            "wind_speed_10m_max",
-            "wind_direction_10m_dominant",
+            "wave_height_max", "wind_wave_height_max", "swell_wave_height_max",
+            "wind_speed_10m_max", "wind_gusts_10m_max",
+            "precipitation_sum", "weather_code",
         ],
-        "timezone": "Asia/Shanghai",
-        "forecast_days": 7,
+        "timezone": "Asia/Shanghai", "forecast_days": 7,
     }
-
-    max_retries = 2
-    last_error = None
-    for attempt in range(max_retries + 1):
+    for attempt in range(3):
         try:
             resp = httpx.get(url, params=params, timeout=30.0)
             resp.raise_for_status()
             return resp.json()
         except Exception as e:
-            last_error = e
-            if attempt < max_retries:
+            if attempt < 2:
                 time.sleep(3)
-    raise last_error
+            else:
+                raise e
 
 
-def classify_sea_state(data):
-    """Classify sea conditions for human-readable summary."""
+def classify_risk(data):
+    """Classify weather risk for port operations."""
     daily = data.get("daily", {})
     if not daily:
-        return {}
+        return {"wave":"no data","wind":"no data","risk":"unknown","alerts":[]}
 
-    today_idx = 0
-    result = {}
+    idx = 0
+    r = {}
+    alerts = []
 
-    # Wave height classification (max wave height)
-    wave_key = "wave_height_max"
-    if wave_key in daily and today_idx < len(daily[wave_key]):
-        wave_h = daily[wave_key][today_idx]
-        if wave_h is None:
-            result["wave"] = "no data"
-        elif wave_h < 1.0:
-            result["wave"] = f"slight ({wave_h:.1f}m)"
-        elif wave_h < 2.0:
-            result["wave"] = f"moderate ({wave_h:.1f}m)"
-        elif wave_h < 3.0:
-            result["wave"] = f"rough ({wave_h:.1f}m)"
-        elif wave_h < 4.0:
-            result["wave"] = f"very rough ({wave_h:.1f}m) !!"
+    # Wave
+    wh = daily.get("wave_height_max", [None])[idx]
+    if wh is not None:
+        r["wave"] = f"{wh:.1f}m"
+        if wh > 3.5: 
+            alerts.append(f"巨浪{wh:.1f}m — 港口极可能关闭")
+            r["risk"] = "critical"
+        elif wh > 2.5: 
+            alerts.append(f"大浪{wh:.1f}m — 吊机作业受限，可能暂停")
+            if r.get("risk") != "critical": r["risk"] = "high"
+        elif wh > 1.5: 
+            if r.get("risk","") not in ("critical","high"): r["risk"] = "moderate"
         else:
-            result["wave"] = f"high ({wave_h:.1f}m) DANGER"
+            if r.get("risk","") not in ("critical","high","moderate"): r["risk"] = "low"
+    else:
+        r["wave"] = "no data"
 
-    # Wind speed (Beaufort scale)
-    wind_key = "wind_speed_10m_max"
-    if wind_key in daily and today_idx < len(daily[wind_key]):
-        wind = daily[wind_key][today_idx]
-        if wind is None:
-            result["wind"] = "no data"
-        elif wind < 11:
-            result["wind"] = f"light breeze ({wind:.0f} km/h)"
-        elif wind < 20:
-            result["wind"] = f"moderate ({wind:.0f} km/h)"
-        elif wind < 29:
-            result["wind"] = f"fresh ({wind:.0f} km/h)"
-        elif wind < 39:
-            result["wind"] = f"strong ({wind:.0f} km/h) !!"
-        elif wind < 50:
-            result["wind"] = f"gale ({wind:.0f} km/h) !!"
-        else:
-            result["wind"] = f"storm ({wind:.0f} km/h) DANGER"
+    # Wind speed
+    ws = daily.get("wind_speed_10m_max", [None])[idx]
+    if ws is not None:
+        r["wind"] = f"{ws:.0f}km/h"
+        if ws > 50: 
+            alerts.append(f"暴风{ws:.0f}km/h — 港口极可能关闭")
+            r["risk"] = "critical"
+        elif ws > 35: 
+            alerts.append(f"强风{ws:.0f}km/h — 吊机/引航可能暂停")
+            if r.get("risk") not in ("critical",): r["risk"] = "high"
+        elif ws > 25:
+            if r.get("risk","") not in ("critical","high"): r["risk"] = "moderate"
+    else:
+        r["wind"] = "no data"
+
+    # Wind gust (key for crane ops)
+    wg = daily.get("wind_gusts_10m_max", [None])[idx]
+    if wg is not None:
+        r["gust"] = f"{wg:.0f}km/h"
+        if wg > 70: alerts.append(f"阵风{wg:.0f}km/h — 极度危险")
+
+    # Precipitation
+    precip = daily.get("precipitation_sum", [None])[idx]
+    if precip is not None and precip > 20:
+        alerts.append(f"暴雨{precip:.0f}mm — 能见度受限")
+    if precip is not None:
+        r["rain"] = f"{precip:.0f}mm"
+
+    # Swell (pilot boarding risk)
+    sw = daily.get("swell_wave_height_max", [None])[idx]
+    if sw is not None:
+        r["swell"] = f"{sw:.1f}m"
+        if sw > 3.0: alerts.append(f"涌浪{sw:.1f}m — 引航可能暂停")
 
     # 3-day trend
-    if wave_key in daily and len(daily[wave_key]) >= 3:
-        vals = daily[wave_key][:3]
-        if all(v is not None for v in vals):
-            if vals[2] > vals[0] * 1.3:
-                result["trend"] = "worsening (waves increasing)"
-            elif vals[2] < vals[0] * 0.7:
-                result["trend"] = "improving (waves decreasing)"
-            else:
-                result["trend"] = "stable"
+    wh_vals = daily.get("wave_height_max", [])
+    if len(wh_vals) >= 3 and all(v is not None for v in wh_vals[:3]):
+        if wh_vals[2] > wh_vals[0] * 1.5:
+            r["trend"] = f"急剧恶化 (今{wh_vals[0]:.1f}m → 2天后{wh_vals[2]:.1f}m)"
+            if r.get("risk","") not in ("critical","high"): 
+                r["risk"] = "high"
+        elif wh_vals[2] > wh_vals[0] * 1.2:
+            r["trend"] = f"恶化中 ({wh_vals[0]:.1f}→{wh_vals[2]:.1f}m)"
+        elif wh_vals[2] < wh_vals[0] * 0.7:
+            r["trend"] = f"好转中 ({wh_vals[0]:.1f}→{wh_vals[2]:.1f}m)"
+        else:
+            r["trend"] = "稳定"
 
-    return result
+    # Default risk
+    if "risk" not in r:
+        r["risk"] = "low"
+
+    # Weather code interpretation
+    wc = daily.get("weather_code", [None])[idx]
+    weather_meanings = {
+        0:"晴",1:"晴",2:"多云",3:"阴",45:"雾",48:"霜雾",
+        51:"小雨",53:"中雨",55:"大雨",61:"小雨",63:"中雨",65:"大雨",
+        71:"小雪",73:"中雪",75:"大雪",80:"阵雨",82:"强阵雨",
+        85:"小雪阵",86:"大雪阵",95:"雷暴",96:"雷暴+冰雹",99:"强雷暴+冰雹"
+    }
+    if wc is not None and wc in weather_meanings:
+        r["weather"] = weather_meanings[wc]
+        if wc in (95,96,99): 
+            alerts.append(f"雷暴天气 — 码头作业极可能暂停")
+            r["risk"] = "critical"
+
+    r["alerts"] = alerts
+    return r
 
 
 def fetch_all_weather(ports):
-    """Fetch weather for all ports, return dict keyed by port code."""
     weather_data = {}
     for port in ports:
         try:
             raw = fetch_weather_for_port(port)
-            summary = classify_sea_state(raw)
+            risk = classify_risk(raw)
             weather_data[port["code"]] = {
                 "port": port["port"],
                 "country": port["country"],
-                "raw": raw,
-                "summary": summary,
+                "risk": risk,
             }
-            print(f"  OK {port['port']} ({port['code']}): {summary.get('wave','?')} / {summary.get('wind','?')}")
+            status = "!!!CRITICAL" if risk.get("risk")=="critical" else ("!!HIGH" if risk.get("risk")=="high" else risk.get("risk","?"))
+            print(f"  [{status}] {port['port']}: wave={risk.get('wave','?')} wind={risk.get('wind','?')} trend={risk.get('trend','?')}")
+            if risk.get("alerts"):
+                for a in risk["alerts"]:
+                    print(f"         {a}")
         except Exception as e:
-            print(f"  FAIL {port['port']} ({port['code']}): {e}")
+            print(f"  [FAIL] {port['port']}: {e}")
             weather_data[port["code"]] = {
                 "port": port["port"],
                 "country": port["country"],
-                "error": str(e),
-                "summary": {},
+                "risk": {"risk":"unknown","alerts":[]},
             }
     return weather_data
-
-
-if __name__ == "__main__":
-    ports = load_ports()
-    data = fetch_all_weather(ports)
-    print(f"\nFetched weather for {len(data)} ports")

@@ -1,5 +1,5 @@
 """
-Generate daily broadcast in Chinese.
+Generate daily broadcast in Chinese. Typhoon alerts prominently.
 """
 from datetime import datetime
 
@@ -13,6 +13,7 @@ def format_report(data, no_match_news, weather_data, ports):
         return "\n".join(lines)
 
     summary = data.get("summary", "")
+    typhoon = data.get("typhoon_alert", "")
     alerts = data.get("alerts", [])
     closures = data.get("closures", [])
     suspensions = data.get("suspensions", [])
@@ -24,76 +25,72 @@ def format_report(data, no_match_news, weather_data, ports):
         lines.append(f"> **摘要：** {summary}")
         lines.append("")
 
-    # === 预警 ===
+    # === TYPHOON ALERT ===
+    if typhoon and typhoon != "无台风影响":
+        lines.append("## 台风/热带气旋预警")
+        lines.append("")
+        lines.append(f"> {typhoon}")
+        lines.append("")
+
+    # === ALERTS ===
     if alerts:
-        lines.append("## 预警")
+        lines.append("## 紧急预警")
         for a in alerts:
             lines.append(f"- {a}")
         lines.append("")
 
-    # === 封港 ===
+    # === CLOSURES ===
     lines.append("---")
     lines.append("## 封港情况")
     lines.append("")
     if closures:
         for c in closures:
-            verified = c.get("verification_status", "待确认")
-            if verified == "已确认":
-                vflag = "已确认"
-            elif verified == "待确认":
-                vflag = "待确认"
-            else:
-                vflag = "信息冲突"
-
+            v = c.get("verification_status", "")
+            vflag = "预测" if "预测" in v else ("已确认" if "已确认" in v else v)
             lines.append(f"### {vflag}：{c.get('country','')} / {c.get('port','')}（{c.get('port_code','')}）")
             lines.append("")
             lines.append(f"- **类型**：{c.get('closure_type','?')}")
             lines.append(f"- **范围**：{c.get('closure_scope','?')} — {c.get('affected_facility','?')}")
-            lines.append(f"- **开始时间**：{c.get('start_time','?')}")
-            lines.append(f"- **预计持续**：{c.get('estimated_duration','?')}")
-            lines.append(f"- **受影响操作**：{c.get('affected_operations','?')}")
+            lines.append(f"- **时间**：{c.get('start_time','?')}（预计持续 {c.get('estimated_duration','?')}）")
             lines.append(f"- **原因**：{c.get('reason_detail','?')}")
-            lines.append(f"- **天气关联**：{c.get('weather_link','?')}")
-            lines.append(f"- **交叉验证**：{c.get('source_count',0)} 个独立来源确认")
-            if verified == "待确认":
-                lines.append(f"- **备注**：{c.get('verification_note','需进一步确认')}")
-            elif verified == "信息冲突":
-                lines.append(f"- **冲突说明**：{c.get('verification_note','来源信息不一致')}")
+            if c.get("weather_basis"):
+                lines.append(f"- **天气依据**：{c.get('weather_basis')}")
             lines.append("")
     else:
-        lines.append("今日无封港报告。")
+        lines.append("今日无封港。")
         lines.append("")
 
-    # === 停航 ===
+    # === SUSPENSIONS ===
     lines.append("---")
-    lines.append("## 停航情况")
+    lines.append("## 停航/暂停运营")
     lines.append("")
     if suspensions:
         for s in suspensions:
-            vflag = "已确认" if s.get("verification_status") == "已确认" else "待确认"
+            vflag = "预测" if "预测" in s.get("verification_status","") else s.get("verification_status","?")
             lines.append(f"### {vflag}：{s.get('country','')} / {s.get('port','')}")
             lines.append("")
             lines.append(f"- **类型**：{s.get('suspension_type','?')}")
             lines.append(f"- **详情**：{s.get('detail','?')}")
-            lines.append(f"- **开始时间**：{s.get('start_time','?')}")
-            lines.append(f"- **预计持续**：{s.get('estimated_duration','?')}")
+            lines.append(f"- **时间**：{s.get('start_time','?')}（预计持续 {s.get('estimated_duration','?')}）")
+            if s.get("weather_basis"):
+                lines.append(f"- **天气依据**：{s.get('weather_basis')}")
             lines.append("")
     else:
-        lines.append("今日无停航报告。")
+        lines.append("今日无停航。")
         lines.append("")
 
-    # === 运行中断 ===
+    # === DISRUPTED ===
     if disrupted:
         lines.append("---")
         lines.append("## 运行中断")
         lines.append("")
-        lines.append("| 港口 | 国家 | 问题 | 严重程度 | 封港风险 |")
-        lines.append("|------|------|------|----------|----------|")
+        lines.append("| 港口 | 问题 | 严重程度 | 封港风险 | 天气 |")
+        lines.append("|------|------|----------|----------|------|")
         for d in disrupted:
-            lines.append(f"| **{d.get('port','?')}** | {d.get('country','?')} | {d.get('issue','?')} | {d.get('severity','?')} | {d.get('closure_risk','?')} |")
+            lines.append(f"| **{d.get('port','?')}** ({d.get('country','?')}) | {d.get('issue','?')} | {d.get('severity','?')} | {d.get('closure_risk','?')} | {d.get('weather_note','?')} |")
         lines.append("")
 
-    # === 正常运行 ===
+    # === NORMAL ===
     if normal:
         lines.append("---")
         lines.append("## 正常运行")
@@ -104,36 +101,35 @@ def format_report(data, no_match_news, weather_data, ports):
         for country in sorted(by_c):
             lines.append(f"### {country}")
             lines.append("")
-            lines.append("| 港口 | 状态 | 天气 |")
-            lines.append("|------|------|------|")
             for n in by_c[country]:
-                lines.append(f"| **{n.get('port','?')}** | {n.get('status_note','?')} | {n.get('weather_note','?')} |")
+                lines.append(f"- **{n.get('port','?')}**：{n.get('status_note','?')}。{n.get('weather_note','?')}")
             lines.append("")
 
-    # === 无数据 ===
+    # === NO DATA ===
     if no_data:
         lines.append("---")
-        lines.append("## 无数据港口")
+        lines.append("## 无数据")
         lines.append("")
-        ports_str = "、".join(f"{n.get('port','?')}" for n in no_data)
-        lines.append(f"{ports_str}")
+        lines.append("、".join(n.get("port","?") for n in no_data))
         lines.append("")
 
-    # === 天气 ===
+    # === WEATHER RISK MAP ===
     if weather_data:
         lines.append("---")
-        lines.append("## 天气海况")
+        lines.append("## 天气风险总览")
         lines.append("")
-        lines.append("| 国家 | 港口 | 浪高 | 风速 | 趋势 |")
-        lines.append("|------|------|------|------|------|")
+        lines.append("| 港口 | 浪高 | 风速 | 阵风 | 涌浪 | 降雨 | 趋势 | 风险 |")
+        lines.append("|------|------|------|------|------|------|------|------|")
         for code, wd in weather_data.items():
-            s = wd.get("summary", {})
-            if wd.get("error"):
-                lines.append(f"| {wd.get('country','?')} | {wd.get('port','?')} | 获取失败 | - | - |")
-            else:
-                lines.append(f"| {wd.get('country','?')} | {wd.get('port','?')} | {s.get('wave','-')} | {s.get('wind','-')} | {s.get('trend','-')} |")
+            r = wd.get("risk", {})
+            risk = r.get("risk","?")
+            flag = {"critical":"CRITICAL","high":"HIGH","moderate":"MOD","low":"OK","unknown":"?"}.get(risk, risk)
+            lines.append(
+                f"| {wd.get('country','?')} {wd.get('port','?')} | {r.get('wave','-')} | {r.get('wind','-')} | "
+                f"{r.get('gust','-')} | {r.get('swell','-')} | {r.get('rain','-')} | {r.get('trend','-')} | **{flag}** |"
+            )
         lines.append("")
 
     lines.append("---")
-    lines.append(f"*自动生成 {today} | 交叉验证 | Daily Port Broadcast*")
+    lines.append(f"*{today} | 天气驱动预警 | Daily Port Broadcast*")
     return "\n".join(lines)
