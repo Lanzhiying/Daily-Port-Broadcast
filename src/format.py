@@ -1,5 +1,5 @@
 """
-Generate daily broadcast in Chinese. Typhoon alerts prominently.
+Generate daily broadcast in Chinese.
 """
 from datetime import datetime
 
@@ -25,21 +25,21 @@ def format_report(data, no_match_news, weather_data, ports):
         lines.append(f"> **摘要：** {summary}")
         lines.append("")
 
-    # === TYPHOON ALERT ===
+    # Typhoon
     if typhoon and typhoon != "无台风影响":
         lines.append("## 台风/热带气旋预警")
         lines.append("")
         lines.append(f"> {typhoon}")
         lines.append("")
 
-    # === ALERTS ===
+    # Alerts
     if alerts:
         lines.append("## 紧急预警")
         for a in alerts:
             lines.append(f"- {a}")
         lines.append("")
 
-    # === CLOSURES ===
+    # Closures
     lines.append("---")
     lines.append("## 封港情况")
     lines.append("")
@@ -60,7 +60,7 @@ def format_report(data, no_match_news, weather_data, ports):
         lines.append("今日无封港。")
         lines.append("")
 
-    # === SUSPENSIONS ===
+    # Suspensions
     lines.append("---")
     lines.append("## 停航/暂停运营")
     lines.append("")
@@ -79,7 +79,7 @@ def format_report(data, no_match_news, weather_data, ports):
         lines.append("今日无停航。")
         lines.append("")
 
-    # === DISRUPTED ===
+    # Disrupted
     if disrupted:
         lines.append("---")
         lines.append("## 运行中断")
@@ -90,7 +90,7 @@ def format_report(data, no_match_news, weather_data, ports):
             lines.append(f"| **{d.get('port','?')}** ({d.get('country','?')}) | {d.get('issue','?')} | {d.get('severity','?')} | {d.get('closure_risk','?')} | {d.get('weather_note','?')} |")
         lines.append("")
 
-    # === NORMAL ===
+    # Normal
     if normal:
         lines.append("---")
         lines.append("## 正常运行")
@@ -105,7 +105,7 @@ def format_report(data, no_match_news, weather_data, ports):
                 lines.append(f"- **{n.get('port','?')}**：{n.get('status_note','?')}。{n.get('weather_note','?')}")
             lines.append("")
 
-    # === NO DATA ===
+    # No data
     if no_data:
         lines.append("---")
         lines.append("## 无数据")
@@ -113,18 +113,18 @@ def format_report(data, no_match_news, weather_data, ports):
         lines.append("、".join(n.get("port","?") for n in no_data))
         lines.append("")
 
-    # === WEATHER RISK MAP ===
+    # Weather risk overview
     if weather_data:
         lines.append("---")
         lines.append("## 天气风险总览")
         lines.append("")
         lines.append("| 港口 | 浪高 | 风速 | 阵风 | 涌浪 | 降雨 | 趋势 | 风险 |")
         lines.append("|------|------|------|------|------|------|------|------|")
+        flag_map = {"critical":"CRITICAL","high":"HIGH","moderate":"MOD","low":"OK","unknown":"?"}
         for code, wd in weather_data.items():
             r = wd.get("risk", {})
             risk = r.get("risk","?")
-    flag_map = {"critical":"CRITICAL","high":"HIGH","moderate":"MOD","low":"OK","unknown":"NODATA"}
-    flag = flag_map.get(risk, risk)
+            flag = flag_map.get(risk, risk)
             lines.append(
                 f"| {wd.get('country','?')} {wd.get('port','?')} | {r.get('wave','-')} | {r.get('wind','-')} | "
                 f"{r.get('gust','-')} | {r.get('swell','-')} | {r.get('rain','-')} | {r.get('trend','-')} | **{flag}** |"
@@ -132,5 +132,5 @@ def format_report(data, no_match_news, weather_data, ports):
         lines.append("")
 
     lines.append("---")
-    lines.append(f"*{today} | 天气驱动预警 | Daily Port Broadcast*")
+    lines.append(f"*{today} | Daily Port Broadcast*")
     return "\n".join(lines)
